@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mutual Fund Return Calculator</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #15212d;
+      --muted: #66737f;
+      --line: #dbe2e8;
+      --panel: #ffffff;
+      --soft: #f5f7f8;
+      --green: #167a5a;
+      --green-dark: #0d5f46;
+      --teal: #0f8aa1;
+      --amber: #b66a00;
+      --shadow: 0 18px 50px rgba(21, 33, 45, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(245, 247, 248, 0.96)),
+        linear-gradient(120deg, #e8f3f0 0%, #f7f1e8 44%, #edf2f5 100%);
+    }
+
+    main {
+      width: min(1160px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 32px 0;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .toolbar,
+    .controls,
+    .results {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(219, 226, 232, 0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      padding: 18px 20px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.5rem, 2.2vw, 2.25rem);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .mode {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-width: 240px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+    }
+
+    .mode button {
+      min-height: 42px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .mode button[aria-pressed="true"] {
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(22, 122, 90, 0.24);
+    }
+
+    .controls,
+    .results {
+      border-radius: 8px;
+      padding: 22px;
+    }
+
+    .field {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .field:first-child {
+      padding-top: 0;
+    }
+
+    .field:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .field-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .hint {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      min-width: 170px;
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .prefix,
+    .suffix {
+      color: var(--muted);
+      font-weight: 800;
+      padding: 0 11px;
+      white-space: nowrap;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      min-width: 0;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      font: inherit;
+      font-weight: 800;
+      color: var(--ink);
+      background: transparent;
+      text-align: right;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--green);
+      cursor: pointer;
+    }
+
+    .range-row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-top: 6px;
+    }
+
+    .results {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .primary-result {
+      padding: 20px;
+      border-radius: 8px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--green-dark), var(--teal));
+    }
+
+    .primary-result span {
+      display: block;
+      opacity: 0.82;
+      font-weight: 750;
+      margin-bottom: 8px;
+    }
+
+    .primary-result strong {
+      display: block;
+      overflow-wrap: anywhere;
+      font-size: clamp(2rem, 4.6vw, 3.55rem);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 15px;
+      background: #fff;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 750;
+      margin-bottom: 8px;
+    }
+
+    .metric strong {
+      display: block;
+      overflow-wrap: anywhere;
+      font-size: clamp(1.1rem, 2.4vw, 1.55rem);
+      line-height: 1.15;
+    }
+
+    .chart {
+      display: grid;
+      gap: 12px;
+      padding-top: 4px;
+    }
+
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 750;
+    }
+
+    .track {
+      position: relative;
+      height: 38px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #e9eef0;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      transition: width 160ms ease;
+    }
+
+    .bar.invested {
+      background: var(--amber);
+    }
+
+    .bar.gains {
+      background: var(--green);
+    }
+
+    .note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 820px) {
+      main {
+        width: min(100vw - 24px, 620px);
+        padding: 18px 0;
+      }
+
+      .shell,
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar,
+      .field-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .mode,
+      .input-wrap {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="toolbar" aria-label="Calculator header">
+      <div>
+        <h1>Mutual Fund Return Calculator</h1>
+        <p class="subtitle">Compare SIP and lumpsum growth using adjustable amount, time, and return assumptions.</p>
+      </div>
+      <div class="mode" role="group" aria-label="Investment type">
+        <button type="button" id="sipMode" aria-pressed="true">SIP</button>
+        <button type="button" id="lumpsumMode" aria-pressed="false">Lumpsum</button>
+      </div>
+    </section>
+
+    <section class="shell">
+      <form class="controls" aria-label="Calculator inputs">
+        <div class="field">
+          <div class="field-head">
+            <div>
+              <label id="amountLabel" for="amountInput">Monthly SIP amount</label>
+              <span class="hint" id="amountHint">Drag or type any non-negative amount.</span>
+            </div>
+            <div class="input-wrap">
+              <span class="prefix">₹</span>
+              <input id="amountInput" type="number" min="0" step="500" value="5000" inputmode="decimal" aria-describedby="amountHint">
+            </div>
+          </div>
+          <input id="amountRange" type="range" min="0" max="100000" step="500" value="5000" aria-labelledby="amountLabel">
+          <div class="range-row"><span>₹0</span><span id="amountMax">₹1,00,000</span></div>
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <div>
+              <label for="yearsInput">Investment period</label>
+              <span class="hint">Choose a duration from 0 to 100 years.</span>
+            </div>
+            <div class="input-wrap">
+              <input id="yearsInput" type="number" min="0" max="100" step="1" value="15" inputmode="numeric">
+              <span class="suffix">years</span>
+            </div>
+          </div>
+          <input id="yearsRange" type="range" min="0" max="100" step="1" value="15" aria-label="Investment period in years">
+          <div class="range-row"><span>0 years</span><span>100 years</span></div>
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <div>
+              <label for="returnInput">Expected annual return</label>
+              <span class="hint">Estimated annualized rate from 0% to 100%.</span>
+            </div>
+            <div class="input-wrap">
+              <input id="returnInput" type="number" min="0" max="100" step="0.1" value="12" inputmode="decimal">
+              <span class="suffix">%</span>
+            </div>
+          </div>
+          <input id="returnRange" type="range" min="0" max="100" step="0.1" value="12" aria-label="Expected annual return percentage">
+          <div class="range-row"><span>0%</span><span>100%</span></div>
+        </div>
+      </form>
+
+      <aside class="results" aria-label="Calculated returns">
+        <div class="primary-result">
+          <span>Estimated future value</span>
+          <strong id="futureValue">₹0</strong>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric">
+            <span>Total invested</span>
+            <strong id="investedValue">₹0</strong>
+          </div>
+          <div class="metric">
+            <span>Estimated gains</span>
+            <strong id="gainValue">₹0</strong>
+          </div>
+          <div class="metric">
+            <span id="amountMetricLabel">Monthly investment</span>
+            <strong id="amountValue">₹0</strong>
+          </div>
+          <div class="metric">
+            <span>Monthly equivalent return</span>
+            <strong id="monthlyRate">0%</strong>
+          </div>
+        </div>
+
+        <div class="chart" aria-label="Investment split chart">
+          <div>
+            <div class="bar-label"><span>Invested amount</span><span id="investedPercent">0%</span></div>
+            <div class="track"><div class="bar invested" id="investedBar"></div></div>
+          </div>
+          <div>
+            <div class="bar-label"><span>Estimated gains</span><span id="gainPercent">0%</span></div>
+            <div class="track"><div class="bar gains" id="gainBar"></div></div>
+          </div>
+        </div>
+
+        <p class="note">Returns are estimates based on constant compounding and do not include taxes, fees, exit loads, or market volatility.</p>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      mode: "sip",
+      amount: 5000,
+      years: 15,
+      annualReturn: 12,
+      amountMax: 100000
+    };
+
+    const els = {
+      sipMode: document.querySelector("#sipMode"),
+      lumpsumMode: document.querySelector("#lumpsumMode"),
+      amountLabel: document.querySelector("#amountLabel"),
+      amountInput: document.querySelector("#amountInput"),
+      amountRange: document.querySelector("#amountRange"),
+      amountMax: document.querySelector("#amountMax"),
+      yearsInput: document.querySelector("#yearsInput"),
+      yearsRange: document.querySelector("#yearsRange"),
+      returnInput: document.querySelector("#returnInput"),
+      returnRange: document.querySelector("#returnRange"),
+      futureValue: document.querySelector("#futureValue"),
+      investedValue: document.querySelector("#investedValue"),
+      gainValue: document.querySelector("#gainValue"),
+      amountMetricLabel: document.querySelector("#amountMetricLabel"),
+      amountValue: document.querySelector("#amountValue"),
+      monthlyRate: document.querySelector("#monthlyRate"),
+      investedPercent: document.querySelector("#investedPercent"),
+      gainPercent: document.querySelector("#gainPercent"),
+      investedBar: document.querySelector("#investedBar"),
+      gainBar: document.querySelector("#gainBar")
+    };
+
+    const currency = new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0
+    });
+
+    const number = new Intl.NumberFormat("en-IN", {
+      maximumFractionDigits: 0
+    });
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function readNumber(value, fallback = 0) {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    }
+
+    function syncAmountMax(value) {
+      if (value <= state.amountMax * 0.92) return;
+      const nextMax = Math.max(100000, Math.ceil((value * 2) / 1000) * 1000);
+      state.amountMax = nextMax;
+      els.amountRange.max = String(nextMax);
+      els.amountMax.textContent = `₹${number.format(nextMax)}`;
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      const isSip = mode === "sip";
+      els.sipMode.setAttribute("aria-pressed", String(isSip));
+      els.lumpsumMode.setAttribute("aria-pressed", String(!isSip));
+      els.amountLabel.textContent = isSip ? "Monthly SIP amount" : "Lumpsum amount";
+      els.amountMetricLabel.textContent = isSip ? "Monthly investment" : "Initial investment";
+      calculate();
+    }
+
+    function calculate() {
+      syncAmountMax(state.amount);
+
+      els.amountInput.value = String(state.amount);
+      els.amountRange.value = String(clamp(state.amount, 0, state.amountMax));
+      els.yearsInput.value = String(state.years);
+      els.yearsRange.value = String(state.years);
+      els.returnInput.value = String(state.annualReturn);
+      els.returnRange.value = String(state.annualReturn);
+
+      const months = Math.round(state.years * 12);
+      const annualRate = state.annualReturn / 100;
+      const monthlyReturn = Math.pow(1 + annualRate, 1 / 12) - 1;
+
+      let invested = 0;
+      let future = 0;
+
+      if (state.mode === "sip") {
+        invested = state.amount * months;
+        future = monthlyReturn === 0
+          ? invested
+          : state.amount * ((Math.pow(1 + monthlyReturn, months) - 1) / monthlyReturn) * (1 + monthlyReturn);
+      } else {
+        invested = state.amount;
+        future = state.amount * Math.pow(1 + annualRate, state.years);
+      }
+
+      const gains = Math.max(0, future - invested);
+      const total = Math.max(future, 0);
+      const investedShare = total > 0 ? (invested / total) * 100 : 0;
+      const gainShare = total > 0 ? (gains / total) * 100 : 0;
+
+      els.futureValue.textContent = currency.format(future);
+      els.investedValue.textContent = currency.format(invested);
+      els.gainValue.textContent = currency.format(gains);
+      els.amountValue.textContent = currency.format(state.amount);
+      els.monthlyRate.textContent = `${(monthlyReturn * 100).toFixed(2)}%`;
+      els.investedPercent.textContent = `${investedShare.toFixed(1)}%`;
+      els.gainPercent.textContent = `${gainShare.toFixed(1)}%`;
+      els.investedBar.style.width = `${clamp(investedShare, 0, 100)}%`;
+      els.gainBar.style.width = `${clamp(gainShare, 0, 100)}%`;
+    }
+
+    els.sipMode.addEventListener("click", () => setMode("sip"));
+    els.lumpsumMode.addEventListener("click", () => setMode("lumpsum"));
+
+    els.amountInput.addEventListener("input", (event) => {
+      state.amount = Math.max(0, readNumber(event.target.value));
+      calculate();
+    });
+
+    els.amountRange.addEventListener("input", (event) => {
+      state.amount = Math.max(0, readNumber(event.target.value));
+      calculate();
+    });
+
+    els.yearsInput.addEventListener("input", (event) => {
+      state.years = clamp(readNumber(event.target.value), 0, 100);
+      calculate();
+    });
+
+    els.yearsRange.addEventListener("input", (event) => {
+      state.years = clamp(readNumber(event.target.value), 0, 100);
+      calculate();
+    });
+
+    els.returnInput.addEventListener("input", (event) => {
+      state.annualReturn = clamp(readNumber(event.target.value), 0, 100);
+      calculate();
+    });
+
+    els.returnRange.addEventListener("input", (event) => {
+      state.annualReturn = clamp(readNumber(event.target.value), 0, 100);
+      calculate();
+    });
+
+    calculate();
+  </script>
+</body>
+</html>
