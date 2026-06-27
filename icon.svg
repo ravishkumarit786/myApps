@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Mutual Fund Calculator</title>
+  <desc id="desc">Green finance calculator icon with a rupee symbol and growth chart.</desc>
+  <rect width="512" height="512" rx="108" fill="#167a5a"/>
+  <circle cx="396" cy="116" r="58" fill="#f0b23c"/>
+  <path fill="#ffffff" d="M135 130h170a28 28 0 0 1 28 28v196a28 28 0 0 1-28 28H135a28 28 0 0 1-28-28V158a28 28 0 0 1 28-28Z"/>
+  <path fill="#dceee8" d="M143 176h154v42H143z"/>
+  <path fill="#167a5a" d="M158 270h50v72h-50zm73-44h50v116h-50zm73-70h50v186h-50z"/>
+  <path fill="#0d5f46" d="M128 402h256v26H128z"/>
+  <path fill="#0d5f46" d="M177 243h58c22 0 39 14 43 34h35v22h-35c-4 21-21 34-43 34h-22l72 78h-41l-68-75v-25h56c13 0 22-4 26-12h-81v-22h81c-4-8-13-12-26-12h-55v-22Zm0-35h136v22H177z"/>
+</svg>
