@@ -1,0 +1,20 @@
+{
+  "name": "Mutual Fund Return Calculator",
+  "short_name": "MF Calculator",
+  "description": "Calculate SIP and lumpsum mutual fund returns with adjustable amount, years, and return rate.",
+  "start_url": "/myApps/",
+  "scope": "/myApps/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f5f7f8",
+  "theme_color": "#167a5a",
+  "categories": ["finance", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
